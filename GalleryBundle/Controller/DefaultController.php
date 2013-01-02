@@ -58,7 +58,7 @@ class DefaultController extends Controller
 
         if($type == 'thumb') {
             $img->thumbnailImage(100, 100);
-        } else {
+        } else if($type == 'image') {
             $img->thumbnailImage(640, 480, true, true);
         }
 
@@ -88,11 +88,15 @@ class DefaultController extends Controller
             'jpg', 'png', 'gif',
         );
 
+        $public = realpath($this->get('kernel')->getRootDir() . '/../web/bundles/felicelligallery/cache');
         $files = array();
         $fileList = glob($dir . "/*.*");
         foreach($fileList as $file) {
             if(is_file($file) && in_array(strtolower(substr($file, -3)), $validExtensions)) {
-                array_unshift($files, str_replace('/', ':', $file));
+                if(!file_exists($public . '/' . basename($file))) {
+                    exec('ln -s ' . $file . ' ' . $public . '/' . basename($file));
+                }
+                array_unshift($files, 'bundles/felicelligallery/cache/' . basename($file));
             }
         }
 
