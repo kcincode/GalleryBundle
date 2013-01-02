@@ -5,6 +5,7 @@ namespace Felicelli\GalleryBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\Response;
 
 class DefaultController extends Controller
 {
@@ -22,19 +23,47 @@ class DefaultController extends Controller
         // get list of images
         $images = $this->getAllImages($this->_dir);
 
-        return array('albums' => $albums);
+        return array(
+            'albums' => $albums,
+            'images' => $images,
+        );
     }
+
     /**
-     * @Route("/dir/{$dir}")
+     * @Route("/{dir}")
      * @Template("FelicelliGalleryBundle:Default:index.html.twig")
      */
-    public function indexAction($dir)
+    public function albumAction($dir)
     {
         // get list of albums
+        $albums = $this->getAllAlbums();
 
         // get list of images
+        $images = $this->getAllImages($this->_dir . '/' . $dir);
 
-        return array('albums' => $albums);
+        return array(
+            'albums' => $albums,
+            'images' => $images,
+        );
+    }
+
+    /**
+     * @Route("/loadimage/{type}/{file}")
+     */
+    public function imageAction($type, $file)
+    {
+        header('ContentType: image/jpg');
+        $file = str_replace(':', '/', $file);
+        $img = new \Imagick($file);
+
+        if($type == 'thumb') {
+            $img->thumbnailImage(100, 100);
+        } else {
+            $img->thumbnailImage(640, 480, true, true);
+        }
+
+        echo $img;
+        return new Response();
     }
 
     private function getAllAlbums()
@@ -60,10 +89,10 @@ class DefaultController extends Controller
         );
 
         $files = array();
-        $fileList = glob($this->_dir . '/' . $dir . "/*.*");
+        $fileList = glob($dir . "/*.*");
         foreach($fileList as $file) {
             if(is_file($file) && in_array(strtolower(substr($file, -3)), $validExtensions)) {
-                array_unshift($files, $dir . '/' . basename($file));
+                array_unshift($files, str_replace('/', ':', $file));
             }
         }
 

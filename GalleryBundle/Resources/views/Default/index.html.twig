@@ -1,13 +1,105 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Bootstrap 101 Template</title>
+    <title>Web Gallery</title>
     <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="{{ asset('bundles/felicelligallery/css/bootstrap.min.css') }}" rel="stylesheet" media="screen">
+    <link href="{{ asset('bundles/felicelligallery/css/style.css') }}" rel="stylesheet" media="screen">
   </head>
   <body>
-    <h1>Hello, world!</h1>
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="span12">&nbsp;</div>
+        </div>
+        <div class="row-fluid">
+            <div class="span3">
+                <div class="well sidebar-nav">
+                    <ul class="nav nav-list">
+                        <li class="nav-header">Albums</li>
+                        {% for album in albums %}
+                        <li><a href="{{ album['name'] }}">{{ album['name'] }} ({{ album['count'] }})</a><li>
+                        {% else %}
+                        <li>No Albums Found</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="span9">
+                {% if images %}
+                <div class="row">
+                    <div id="image" class="span8 well">
+                        <a id="prev" href="#" class="btn"><i class="icon-arrow-left"></i></a>
+                        <img class="span10" id="the-image" src="loadimage/img/{{ images[0] }}" />
+                        <a id="next" href="#" class="btn"><i class="icon-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div id="thumbs">
+                    <div class="row">
+                        <div class="span8" data->
+                            {% for image in images %}
+                            {% if loop.index % 6 == 0 %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="span8">
+                            {% endif %}
+                            <div id="thumb-{{ loop.index }}" class="well well-small span2 thumb" data-image="{{ image }}" data-id="{{ loop.index }}">
+                                <img src="{{app.request.getBaseUrl }}/loadimage/thumb/{{ image }}"/>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <h2>No Images Here</h2>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="{{ asset('bundles/felicelligallery/js/bootstrap.min.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('#thumb-1').addClass('highlight');
+
+            $('#thumbs .thumb').each(function() {
+                $(this).click(function(e) {
+                    $('#the-image').prop('src', '{{ app.request.getBaseUrl }}/loadimage/image/' + $(this).data('image'));
+                    $('#thumbs .thumb').removeClass('highlight');
+                    $(this).addClass('highlight');
+                });
+            });
+
+            $('#next').click(function(e) {
+                e.preventDefault();
+                var id = $('#thumbs .highlight').data('id') + 1;
+                if(id > $('#thumbs .thumb').length) {
+                    id = 1;
+                }
+
+                $('#thumbs .thumb').removeClass('highlight');
+                $('#the-image').fadeOut('fast');
+                $('#the-image').prop('src', '{{ app.request.getBaseUrl }}/loadimage/image/' + $('#thumb-' + id).data('image'));
+                $('#thumbs .thumb').removeClass('highlight');
+                $('#thumb-' + id).addClass('highlight');
+                $('#the-image').fadeIn('fast');
+            });
+
+            $('#prev').click(function(e) {
+                e.preventDefault();
+                var id = $('#thumbs .highlight').data('id') - 1;
+                if(id < 1) {
+                    id = $('#thumbs .thumb').length;
+                }
+
+                $('#thumbs .thumb').removeClass('highlight');
+                $('#the-image').prop('src', '{{ app.request.getBaseUrl }}/loadimage/image/' + $('#thumb-' + id).data('image'));
+                $('#thumbs .thumb').removeClass('highlight');
+                $('#thumb-' + id).addClass('highlight');
+            });
+
+        });
+    </script>
+
   </body>
 </html>
