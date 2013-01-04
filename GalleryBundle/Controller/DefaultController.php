@@ -40,6 +40,12 @@ class DefaultController extends Controller
 
         // get list of images
         $images = $this->getAllImages($this->_dir . '/' . $dir);
+        $public = realpath($this->get('kernel')->getRootDir() . '/../web/bundles/felicelligallery/cache');
+        foreach($images as $image) {
+            if(!file_exists($public . '/' . str_replace('/', '_', $image))) {
+                exec('ln -s ' . $image . ' ' . $public . '/' . str_replace('/', '_', $image));
+            }
+        }
 
         return array(
             'albums' => $albums,
@@ -74,7 +80,7 @@ class DefaultController extends Controller
             if(is_dir($file)) {
                 array_unshift($directories, array(
                     'name' => basename($file),
-                    'count' => count($this->getAllImages(basename($file))),
+                    'count' => count($this->getAllImages($file)),
                 ));
             }
         }
@@ -88,15 +94,11 @@ class DefaultController extends Controller
             'jpg', 'png', 'gif',
         );
 
-        $public = realpath($this->get('kernel')->getRootDir() . '/../web/bundles/felicelligallery/cache');
         $files = array();
         $fileList = glob($dir . "/*.*");
         foreach($fileList as $file) {
             if(is_file($file) && in_array(strtolower(substr($file, -3)), $validExtensions)) {
-                if(!file_exists($public . '/' . basename($file))) {
-                    exec('ln -s ' . $file . ' ' . $public . '/' . basename($file));
-                }
-                array_unshift($files, 'bundles/felicelligallery/cache/' . basename($file));
+                array_unshift($files, 'bundles/felicelligallery/cache/' . str_replace('/', '_', $file));
             }
         }
 
